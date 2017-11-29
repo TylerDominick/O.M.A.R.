@@ -13,16 +13,18 @@ class Graph:
         self.edges = collections.defaultdict(list)
         self.weights = {}
         self.directions = {}
+        self.end_directions = {}
 
     def add_vertex(self, value):
         self.vertices.add(value)
 
-    def add_edge(self, from_vertex, to_vertex, distance, direction):
+    def add_edge(self, from_vertex, to_vertex, distance, direction, end_direction):
         if from_vertex == to_vertex:
             pass  # no cycles allowed
         self.edges[from_vertex].append(to_vertex)
         self.weights[(from_vertex, to_vertex)] = distance
         self.directions[(from_vertex, to_vertex)] = direction
+        self.end_directions[(from_vertex, to_vertex)] = end_direction
 
     def __str__(self):
         string = "Vertices: " + str(self.vertices) + "\n"
@@ -78,7 +80,10 @@ def shortest_path(graph, start, end):
     path.reverse()
     return path
 
+
 def robot_commands(g, path):
+
+    commands = []
 
     if (path[0] == 'n1' or path[0] == 'n19' or path[0] == 'n16'):
         direction = 'North'
@@ -95,48 +100,60 @@ def robot_commands(g, path):
         next_node = path[path.index(node) - len(path)+1]
         if direction == "North":
             if g.directions[node, next_node] == "East":
-                direction = "East"
-                print("Right")
+                direction = g.end_directions[node, next_node]
+                commands.append("Right")
             elif g.directions[node, next_node] == "West":
-                direction = "West"
-                print("Left")
+                direction = g.end_directions[node, next_node]
+                commands.append("Left")
             elif g.directions[node, next_node] == "South":
-                direction = "South"
-                print("Turn around")
+                direction = g.end_directions[node, next_node]
+                commands.append("Turn around")
+            else:
+                direction = g.end_directions[node, next_node]
+
         elif direction == "South":
             if g.directions[node, next_node] == "East":
-                direction = "East"
-                print("Left")
+                direction = g.end_directions[node, next_node]
+                commands.append("Left")
             elif g.directions[node, next_node] == "West":
-                direction = "West"
-                print("Right")
+                direction = g.end_directions[node, next_node]
+                commands.append("Right")
             elif g.directions[node, next_node] == "North":
-                direction = "North"
-                print("Turn around")
+                direction = g.end_directions[node, next_node]
+                commands.append("Turn around")
+            else: direction = g.end_directions[node, next_node]
+
         elif direction == "East":
             if g.directions[node, next_node] == "South":
-                direction = "South"
-                print("Right")
+                direction = g.end_directions[node, next_node]
+                commands.append("Right")
             elif g.directions[node, next_node] == "North":
-                direction = "North"
-                print("Left")
+                direction = g.end_directions[node, next_node]
+                commands.append("Left")
             elif g.directions[node, next_node] == "West":
-                direction = "West"
-                print("Turn around")
+                direction = g.end_directions[node, next_node]
+                commands.append("Turn around")
+            else: direction = g.end_directions[node, next_node]
+
         elif direction == "West":
             if g.directions[node, next_node] == "North":
-                direction = "North"
-                print("Right")
+                direction = g.end_directions[node, next_node]
+                commands.append("Right")
             elif g.directions[node, next_node] == "South":
-                direction = "South"
-                print("Left")
+                direction = g.end_directions[node, next_node]
+                commands.append("Left")
             elif g.directions[node, next_node] == "East":
-                direction = "East"
-                print("Turn around")
-        print("Forward")
+                direction = g.end_directions[node, next_node]
+                commands.append("Turn around")
+            else:
+                direction = g.end_directions[node, next_node]
+
+        commands.append("Forward")
+
+    return commands
 
 
-def main():
+def build_map():
     g = Graph()
     g.add_vertex('n1')
     g.add_vertex('n2')
@@ -158,52 +175,81 @@ def main():
     g.add_vertex('n18')
     g.add_vertex('n19')
 
-    g.add_edge('n1', 'n2', 1, "North")
-    g.add_edge('n2', 'n1', 1, "South")
-    g.add_edge('n2', 'n3', 1, "East")
-    g.add_edge('n3', 'n2', 1, "West")
-    g.add_edge('n2', 'n4', 1, "North")
-    g.add_edge('n4', 'n2', 1, "South")
-    g.add_edge('n4', 'n5', 1, "East")
-    g.add_edge('n5', 'n4', 1, "West")
-    g.add_edge('n4', 'n6', 1, "North")
-    g.add_edge('n6', 'n4', 1, "South")
-    g.add_edge('n7', 'n4', 1, "East")
-    g.add_edge('n4', 'n7', 1, "West")
-    g.add_edge('n7', 'n8', 1, "North")
-    g.add_edge('n8', 'n7', 1, "South")
-    g.add_edge('n7', 'n9', 1, "West")
-    g.add_edge('n9', 'n7', 1, "East")
-    g.add_edge('n9', 'n10', 1, "East")
-    g.add_edge('n10', 'n9', 1, "West")
-    g.add_edge('n9', 'n11', 1, "West")
-    g.add_edge('n11', 'n9', 1, "East")
-    g.add_edge('n11', 'n12', 1, "West")
-    g.add_edge('n12', 'n11', 1, "East")
-    g.add_edge('n11', 'n13', 1, "South")
-    g.add_edge('n13', 'n11', 1, "North")
-    g.add_edge('n13', 'n14', 1, "South")
-    g.add_edge('n14', 'n13', 1, "North")
-    g.add_edge('n14', 'n15', 1, "West")
-    g.add_edge('n15', 'n14', 1, "East")
-    g.add_edge('n14', 'n16', 1, "South")
-    g.add_edge('n16', 'n14', 1, "North")
-    g.add_edge('n14', 'n17', 1, "East")
-    g.add_edge('n17', 'n14', 1, "West")
-    g.add_edge('n17', 'n18', 1, "East")
-    g.add_edge('n18', 'n17', 1, "West")
-    g.add_edge('n18', 'n19', 1, "South")
-    g.add_edge('n19', 'n18', 1, "North")
-    g.add_edge('n18', 'n7', 1, "North")
-    g.add_edge('n7', 'n18', 1, "South")
-    g.add_edge('n13', 'n17', 1, "East")
-    g.add_edge('n17', 'n13', 1, "West")
+    g.add_edge('n1', 'n2', 1, "North", "North")
+    g.add_edge('n2', 'n1', 1, "South", "South")
 
-    # print(g)
-    # print(g.directions['n2', 'n1'])
-    robot_commands(g, shortest_path(g, "n1", "n3"))
-    # print(dijkstra(g, 'n1'))
-    # print(shortest_path(g, 'n1', 'n7'))
+    g.add_edge('n2', 'n3', 1, "East", "East")
+    g.add_edge('n3', 'n2', 1, "West", "West")
+
+    g.add_edge('n2', 'n4', 1, "North", "North")
+    g.add_edge('n4', 'n2', 1, "South", "South")
+
+    g.add_edge('n4', 'n5', 1, "East", "East")
+    g.add_edge('n5', 'n4', 1, "West", "West")
+
+    g.add_edge('n4', 'n6', 1, "North", "North")
+    g.add_edge('n6', 'n4', 1, "South", "South")
+
+    g.add_edge('n7', 'n4', 1, "East", "East")
+    g.add_edge('n4', 'n7', 1, "West", "West")
+
+    g.add_edge('n7', 'n8', 1, "North", "North")
+    g.add_edge('n8', 'n7', 1, "South", "South")
+
+    g.add_edge('n7', 'n9', 1, "West", "North")
+    g.add_edge('n9', 'n7', 1, "South", "East")
+
+    g.add_edge('n9', 'n10', 1, "East", "North")
+    g.add_edge('n10', 'n9', 1, "South", "West")
+
+    g.add_edge('n9', 'n11', 1, "West", "West")
+    g.add_edge('n11', 'n9', 1, "East", "East")
+
+    g.add_edge('n11', 'n12', 1, "West", "West")
+    g.add_edge('n12', 'n11', 1, "East", "East")
+
+    g.add_edge('n11', 'n13', 1, "South", "South")
+    g.add_edge('n13', 'n11', 1, "North", "North")
+
+    g.add_edge('n13', 'n14', 1, "West", "South")
+    g.add_edge('n14', 'n13', 1, "North", "East")
+
+    g.add_edge('n14', 'n15', 1, "West", "West")
+    g.add_edge('n15', 'n14', 1, "East", "East")
+
+    g.add_edge('n14', 'n16', 1, "South", "South")
+    g.add_edge('n16', 'n14', 1, "North", "North")
+
+    g.add_edge('n14', 'n17', 1, "East", "North")
+    g.add_edge('n17', 'n14', 1, "South", "West")
+
+    g.add_edge('n17', 'n18', 1, "East", "East")
+    g.add_edge('n18', 'n17', 1, "West", "West")
+
+    g.add_edge('n18', 'n19', 1, "South", "South")
+    g.add_edge('n19', 'n18', 1, "North", "North")
+
+    g.add_edge('n18', 'n7', 1, "North", "North")
+    g.add_edge('n7', 'n18', 1, "South", "South")
+
+    g.add_edge('n13', 'n17', 1, "East", "East")
+    g.add_edge('n17', 'n13', 1 , "West", "West")
+
+    return g
+
+
+def main():
+
+    g = build_map()
+    start_node = input("Enter start node: ")
+    end_node = input("Enter Destination: ")
+
+
+
+    print(shortest_path(g, start_node, end_node))
+    print()
+    print (robot_commands(g, shortest_path(g, start_node, end_node)))
+
 
 
 if __name__ == "__main__":
